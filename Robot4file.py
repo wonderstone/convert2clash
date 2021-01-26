@@ -5,17 +5,22 @@
 # @Software: PyCharm
 # @Ref     :
 
-import yaml
 import base64
-import json
 import datetime
+import json
+import os
+import re
+import requests
 import sys
 import urllib.parse
-import re,os,requests
+from pathlib import Path
+from datetime import datetime
+
+import yaml
 
 
 def log(msg):
-    time = datetime.datetime.now()
+    time = datetime.now()
     print('[' + time.strftime('%Y.%m.%d-%H:%M:%S') + ']:' + msg)
 
 
@@ -23,6 +28,7 @@ def log(msg):
 def save_to_file(file_name, content):
     with open(file_name, 'wb') as f:
         f.write(content)
+
 
 # 针对url的base64解码
 def safe_decode(s):
@@ -54,7 +60,7 @@ def decode_ss_node(nodes):
         info = dict()
         param = decode_proxy
         if param.find('#') > -1:
-            remark = urllib.parse.unquote(param[param.find('#')+1:])
+            remark = urllib.parse.unquote(param[param.find('#') + 1:])
             info['name'] = remark
             param = param[:param.find('#')]
         if param.find('/?') > -1:
@@ -126,23 +132,23 @@ def get_proxies(filedir):
     vess_nodes_list = []
     ssr_nodes_list = []
     ss_nodes_list = []
+    temp_result_list = []
     for root, dirs, files in os.walk(filedir):  # 当前路径、子文件夹名称、文件列表
         for filename in files:
             print(filename)
             target_dir = '{}/{}'.format(root, filename)
             with open(target_dir) as fp:
                 content = fp.read().splitlines()
-
+            temp_result_list.extend(content)
 
     # 请求订阅地址
-    for item in content:
+    for item in temp_result_list:
         if item.startswith('vmess://'):
             vess_nodes_list.append(item)
         if item.startswith('ss://'):
             ss_nodes_list.append(item)
         if item.startswith('ssr://'):
             ssr_nodes_list.append(item)
-
 
     if vess_nodes_list:
         decode_proxy = decode_v2ray_node(vess_nodes_list)
@@ -179,7 +185,7 @@ def v2ray_to_clash(arr):
             continue
         obj = {
             # 'name': item.get('ps').strip() if item.get('ps') else None,
-            'name': datetime.datetime.now().strftime("%Y%m%d-%H%M%S%f"),
+            'name': datetime.now().strftime("%Y%m%d-%H%M%S%f"),
             'type': 'vmess',
             'server': item.get('add'),
             'port': int(item.get('port')),
@@ -213,7 +219,7 @@ def ss_to_clash(arr):
     for item in arr:
         obj = {
             # 'name': item.get('name').strip() if item.get('name') else None,
-            'name': datetime.datetime.now().strftime("%Y%m%d-%H%M%S%f"),
+            'name': datetime.now().strftime("%Y%m%d-%H%M%S%f"),
             'type': 'ss',
             'server': item.get('server'),
             'port': int(item.get('port')),
@@ -267,6 +273,7 @@ def ssr_to_clash(arr):
     log('可用ssr节点{}个'.format(len(proxies['proxy_names'])))
     return proxies
 
+
 # 获取本地规则策略的配置文件
 def load_local_config(path):
     try:
@@ -311,12 +318,15 @@ def save_config(path, data):
     save_to_file(path, config)
     log('成功更新:{}个节点'.format(len(data['proxies'])))
 
+
 # 程序入口
 if __name__ == '__main__':
     # 订阅地址 多个地址用;隔开
     filedir = '/Users/wonderstone/Documents/GitHub/convert2clash/files'
     # 输出路径
-    output_path = './output.yaml'
+    date = datetime.now().strftime("%Y-%m-%d-%H:%M:%S")
+    output_path = Path('output_{}.yaml'.format(date))
+    # output_path = 'output1.yaml'
     # 规则策略
     config_url = 'https://raw.githubusercontent.com/Celeter/v2toclash/master/config.yaml'
     config_path = './config.yaml'

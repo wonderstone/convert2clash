@@ -316,7 +316,7 @@ if __name__ == '__main__':
     # 订阅地址 多个地址用;隔开
     sub_url = ''
     # 输出路径
-    output_path = './output.yaml'
+    output_path = 'output1.yaml'
     # 规则策略
     config_url = 'https://raw.githubusercontent.com/Celeter/v2toclash/master/config.yaml'
     config_path = './config.yaml'
