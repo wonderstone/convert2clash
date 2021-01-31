@@ -133,7 +133,7 @@ def get_proxies(filedir):
     ssr_nodes_list = []
     ss_nodes_list = []
     temp_result_list = []
-    for root, dirs, files in os.walk(filedir):  # 当前路径、子文件夹名称、文件列表
+    for root, _, files in os.walk(filedir):  # 当前路径、子文件夹名称、文件列表
         for filename in files:
             print(filename)
             target_dir = '{}/{}'.format(root, filename)
